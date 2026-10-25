@@ -1,1 +1,136 @@
 
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>RPG 2D - Pixel World</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:#101827;color:#fff;font-family:Arial;text-align:center}
+header{padding:14px;background:#17243b;font-size:22px;font-weight:bold}
+.stats{display:flex;justify-content:center;gap:18px;flex-wrap:wrap;padding:12px}
+canvas{width:min(94vw,600px);height:auto;border:3px solid #64e6a5;border-radius:10px;background:#8bcf77;image-rendering:pixelated}
+button{padding:12px 18px;margin:5px;border:0;border-radius:9px;background:#39c98a;color:#10251d;font-weight:bold}
+.controls{margin:10px auto;max-width:360px;display:grid;grid-template-columns:repeat(3,1fr)}
+.controls button{font-size:20px}
+.panel{margin:12px auto;padding:14px;max-width:600px;background:#1c2b42;border-radius:12px}
+input{padding:12px;border-radius:8px;border:1px solid #60738d;width:65%;max-width:280px}
+small{color:#c5d4e9}
+</style>
+</head>
+<body>
+<header>⚔️ PIXEL WORLD RPG</header>
+<div class="stats">
+<span>💎 Ngọc: <b id="gems">100</b></span>
+<span>🪙 Vàng: <b id="gold">0</b></span>
+<span>❤️ HP: <b id="hp">100</b></span>
+</div>
+
+<canvas id="game" width="480" height="320"></canvas>
+
+<div class="controls">
+<button onclick="move(0,-1)">⬆️</button><span></span>
+<button onclick="move(-1,0)">⬅️</button>
+<button onclick="move(0,1)">⬇️</button>
+<button onclick="move(1,0)">➡️</button>
+</div>
+
+<div class="panel">
+<h3>👾 Quái vật: <span id="monster">30</span> HP</h3>
+<button onclick="attack()">⚔️ ĐÁNH QUÁI</button>
+<button onclick="heal()">❤️ HỒI HP</button>
+<p id="msg">Chào mừng chiến binh!</p>
+</div>
+
+<div class="panel">
+<h3>🎁 Giftcode</h3>
+<input id="code" placeholder="Nhập Giftcode">
+<button onclick="redeem()">Đổi mã</button>
+<p id="giftmsg">Đây chỉ là bản chơi thử trên trình duyệt.</p>
+</div>
+
+<div class="panel">
+<h3>🎒 Túi đồ</h3>
+<p id="bag">Chưa có vật phẩm</p>
+<small>Dữ liệu bản thử nghiệm có thể mất khi tải lại trang.</small>
+</div>
+
+<script>
+const c=document.getElementById("game");
+const ctx=c.getContext("2d");
+let p={x:240,y:160};
+let hp=100,gems=100,gold=0,mhp=30;
+let bag=[];
+let codes={};
+function draw(){
+ ctx.clearRect(0,0,480,320);
+ for(let y=0;y<320;y+=32){
+  for(let x=0;x<480;x+=32){
+   ctx.fillStyle=((x+y)/32)%2?"#86c96e":"#7fc467";
+   ctx.fillRect(x,y,32,32);
+  }
+ }
+ ctx.font="23px Arial";
+ ctx.fillText("🌳",35,55);ctx.fillText("🌳",400,80);
+ ctx.fillText("🌲",70,270);ctx.fillText("🌳",420,285);
+ ctx.fillText("👾",350,160);
+ ctx.fillStyle="white";ctx.font="12px Arial";
+ ctx.fillText("QUÁI",348,133);
+ ctx.fillText("❤️"+mhp,348,145);
+ ctx.font="25px Arial";
+ ctx.fillText("🧙",p.x-12,p.y+8);
+}
+function update(){
+ document.getElementById("gems").textContent=gems;
+ document.getElementById("gold").textContent=gold;
+ document.getElementById("hp").textContent=hp;
+ document.getElementById("monster").textContent=mhp;
+ document.getElementById("bag").textContent=bag.join(", ")||"Chưa có vật phẩm";
+ draw();
+}
+function move(dx,dy){
+ p.x=Math.max(20,Math.min(460,p.x+dx*16));
+ p.y=Math.max(25,Math.min(300,p.y+dy*16));
+ update();
+}
+function attack(){
+ if(mhp<=0){document.getElementById("msg").textContent="Quái đã bị hạ!";return}
+ mhp-=10;
+ if(mhp<=0){
+  mhp=0;gold+=10;gems+=2;
+  document.getElementById("msg").textContent="Hạ quái! +10 vàng, +2 ngọc.";
+  setTimeout(()=>{mhp=30;update()},1000);
+ }else{
+  document.getElementById("msg").textContent="Bạn gây 10 sát thương!";
+ }
+ update();
+}
+function heal(){
+ if(gems>=5&&hp<100){gems-=5;hp=Math.min(100,hp+25)}
+ else document.getElementById("msg").textContent="Cần 5 ngọc và HP chưa đầy!";
+ update();
+}
+function redeem(){
+ let v=document.getElementById("code").value.trim().toUpperCase();
+ if(!v){document.getElementById("giftmsg").textContent="Nhập mã trước nhé!";return}
+ if(codes[v]){
+  document.getElementById("giftmsg").textContent="Mã này đã đổi trên trình duyệt!";
+  return;
+ }
+ document.getElementById("giftmsg").textContent=
+ "Chưa có máy chủ Giftcode. Bản online sẽ cần backend để xác thực mã.";
+}
+document.addEventListener("keydown",e=>{
+ const k=e.key.toLowerCase();
+ if(k==="arrowup"||k==="w")move(0,-1);
+ if(k==="arrowdown"||k==="s")move(0,1);
+ if(k==="arrowleft"||k==="a")move(-1,0);
+ if(k==="arrowright"||k==="d")move(1,0);
+ if(e.key===" ")attack();
+});
+update();
+</script>
+</body>
+</html>
+
